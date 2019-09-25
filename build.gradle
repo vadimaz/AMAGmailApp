@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'com.blogspot.vadimaz'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'com.google.apis:google-api-services-gmail:v1-rev105-1.25.0'
+    compile group: 'com.google.oauth-client', name: 'google-oauth-client-jetty', version: '1.25.0'
+}
