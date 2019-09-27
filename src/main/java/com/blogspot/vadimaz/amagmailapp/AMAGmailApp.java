@@ -18,6 +18,10 @@ public class AMAGmailApp {
                     "89183 89185 89193 89195 89199").split(" ");
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
+        for (String s : ZIPS) {
+            System.out.println(String.format("\"%s\",", s));
+        }
+
         Company company1 = new Company("Fidelity National Home Warranty", "info@eliterestorationteam.com",
                 "FNHW Rush Dispatch Offer", "fnhw.com/swobid/BidForm.aspx", "a=1");
         Company company2 = new Company("Old Republic Home Protection", "info@eliterestorationteam.com",
