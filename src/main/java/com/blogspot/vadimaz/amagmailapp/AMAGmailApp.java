@@ -1,5 +1,8 @@
 package com.blogspot.vadimaz.amagmailapp;
 
+import com.google.api.services.gmail.model.Label;
+import com.google.api.services.gmail.model.ListLabelsResponse;
+
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;

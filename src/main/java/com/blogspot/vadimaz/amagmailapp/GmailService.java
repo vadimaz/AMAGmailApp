@@ -14,8 +14,7 @@ import com.google.api.client.util.StringUtils;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.*;
 
 import java.io.*;
 import java.net.URL;
@@ -67,12 +66,15 @@ public class GmailService {
     private Gmail service;
     private String[] zips;
     private Company company;
+    private static final String LABEL_NAME = "AMAGMAILAPP";
+    private static String labelId;
 
     public GmailService() throws IOException, GeneralSecurityException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         this.service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        initLabels(); // checking if labelId exists
     }
 
     public void setZips(String[] zips) {
@@ -89,8 +91,20 @@ public class GmailService {
         for (Message message : messages) {
             String urlString = getAppropriateURLString(extractURLStrings(message));
             if (urlString != null) result.add(new URL(urlString));
+            //System.out.println(message.getLabelIds());
+            //service.users().messages().modify(USER, message.getId(), new ModifyMessageRequest().setRemoveLabelIds(Collections.singletonList("UNREAD"))).execute();
+            markMessageAsReadAndChangeItsLabel(message);
         }
         return result;
+    }
+
+    private void markMessageAsReadAndChangeItsLabel(Message message) throws IOException {
+        if (labelId != null)
+            service.users().messages().modify(USER, message.getId(),
+                    new ModifyMessageRequest()
+                            .setAddLabelIds(Collections.singletonList(labelId))
+                            .setRemoveLabelIds(Collections.singletonList("UNREAD")))
+                    .execute();
     }
 
     private List<Message> getMessagesBySubject(List<Message> messages, String subject) throws IOException {
@@ -175,4 +189,21 @@ public class GmailService {
         return false;
     }
 
+    public Gmail getService() {
+        return service;
+    }
+    private void initLabels() throws IOException {
+        if (labelId == null)  {
+            ListLabelsResponse listLabelsResponse = service.users().labels().list("me").execute();
+            for (Label label : listLabelsResponse.getLabels()) {
+                if (label.getName().equalsIgnoreCase(LABEL_NAME)) {
+                    labelId = label.getId();
+                    return;
+                }
+            }
+            Label newLabel = new Label().setName(LABEL_NAME).setLabelListVisibility("labelShow").setMessageListVisibility("show");
+            newLabel = service.users().labels().create(USER, newLabel).execute();
+            labelId = newLabel.getId();
+        }
+    }
 }
