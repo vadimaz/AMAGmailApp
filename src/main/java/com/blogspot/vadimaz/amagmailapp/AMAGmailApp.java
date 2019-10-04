@@ -33,6 +33,10 @@ public class AMAGmailApp {
             service.setCompany(company);
             System.out.println(company.getName());
             List<URL> urls = service.getNewURLs();
+            if (urls == null) {
+                System.out.println("No new messages.\n");
+                continue;
+            }
             for (URL url : urls) {
                 System.out.println(url);
                 new Thread(new URLConnectRunnable(url)).start();

@@ -86,8 +86,9 @@ public class GmailService {
     }
 
     public List<URL> getNewURLs() throws IOException {
-        List<URL> result = new ArrayList<>();
         List<Message> messages = getMessages();
+        if (messages == null) return null;
+        List<URL> result = new ArrayList<>();
         for (Message message : messages) {
             String urlString = getAppropriateURLString(extractURLStrings(message));
             if (urlString != null) result.add(new URL(urlString));
@@ -134,6 +135,7 @@ public class GmailService {
 
     private List<Message> getMessages() throws IOException {
         ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("from:%s is:unread", company.getEmail())).execute();
+        if (messagesResponse.getMessages() == null) return null;
         List<Message> messages = new ArrayList<>();
         for (Message m : messagesResponse.getMessages()) {
             Message message = getMessage(m.getId());
