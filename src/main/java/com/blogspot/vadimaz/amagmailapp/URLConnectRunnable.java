@@ -14,7 +14,7 @@ public class URLConnectRunnable implements Runnable {
 
     @Override
     public void run() {
-        try {
+        /*try {
             URLConnection connection = url.openConnection();
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder page = new StringBuilder();
@@ -24,6 +24,13 @@ public class URLConnectRunnable implements Runnable {
             }
             reader.close();
             System.out.println(page);
+        } catch (IOException e) {
+            System.out.println("Can't connect to " + url);
+        }*/
+
+        try {
+            URLConnection connection = url.openConnection();
+            connection.connect();
         } catch (IOException e) {
             System.out.println("Can't connect to " + url);
         }

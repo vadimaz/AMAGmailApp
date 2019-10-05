@@ -3,6 +3,7 @@ package com.blogspot.vadimaz.amagmailapp;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.List;
 
 public class AMAGmailApp {
@@ -17,7 +18,7 @@ public class AMAGmailApp {
                     "89162 89164 89165 89166 89169 89170 89173 89177 89178 89179 89180 " +
                     "89183 89185 89193 89195 89199").split(" ");
 
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
+    public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
 
         Company company1 = new Company("Fidelity National Home Warranty", "info@eliterestorationteam.com",
                 "FNHW Rush Dispatch Offer", "fnhw.com/swobid/BidForm.aspx", "a=1");
@@ -29,19 +30,23 @@ public class AMAGmailApp {
 
         GmailService service = new GmailService();
         service.setZips(ZIPS);
-        for (Company company : companies) {
-            service.setCompany(company);
-            System.out.println(company.getName());
-            List<URL> urls = service.getNewURLs();
-            if (urls == null) {
-                System.out.println("No new messages.\n");
-                continue;
+        while (true) {
+            System.out.println("----- " + new Date() + " ------\n");
+            for (Company company : companies) {
+                service.setCompany(company);
+                System.out.println(company.getName());
+                List<URL> urls = service.getNewURLs();
+                if (urls == null) {
+                    System.out.println("No new messages.\n");
+                    continue;
+                }
+                for (URL url : urls) {
+                    System.out.println(url);
+                    new Thread(new URLConnectRunnable(url)).start();
+                }
+                System.out.println("\n");
             }
-            for (URL url : urls) {
-                System.out.println(url);
-                new Thread(new URLConnectRunnable(url)).start();
-            }
-            System.out.println("\n");
+            Thread.sleep(5000);
         }
 
     }

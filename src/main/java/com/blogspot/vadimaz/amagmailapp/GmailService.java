@@ -134,7 +134,7 @@ public class GmailService {
     }
 
     private List<Message> getMessages() throws IOException {
-        ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("from:%s is:unread", company.getEmail())).execute();
+        ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("in:inbox from:%s is:unread", company.getEmail())).execute();
         if (messagesResponse.getMessages() == null) return null;
         List<Message> messages = new ArrayList<>();
         for (Message m : messagesResponse.getMessages()) {
