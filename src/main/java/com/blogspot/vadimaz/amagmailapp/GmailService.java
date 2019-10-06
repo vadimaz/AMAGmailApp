@@ -98,12 +98,11 @@ public class GmailService {
     }
 
     private void markMessageAsReadAndChangeItsLabel(Message message) throws IOException {
-        if (labelId != null)
-            service.users().messages().modify(USER, message.getId(),
-                    new ModifyMessageRequest()
-                            .setAddLabelIds(Collections.singletonList(labelId))
-                            .setRemoveLabelIds(Collections.singletonList("UNREAD")))
-                    .execute();
+        if (labelId != null) {
+            ModifyMessageRequest request = new ModifyMessageRequest().setAddLabelIds(Collections.singletonList(labelId)).setRemoveLabelIds(Collections.singletonList("UNREAD"));
+            //ModifyMessageRequest request = new ModifyMessageRequest().setAddLabelIds(Collections.singletonList(labelId));
+            service.users().messages().modify(USER, message.getId(),request).execute();
+        }
     }
 
     private List<Message> getMessagesBySubject(List<Message> messages, String subject) throws IOException {
@@ -124,7 +123,9 @@ public class GmailService {
         List<Message> result = new ArrayList<>();
         for (Message message : messages) {
             if (zips != null) {
-                if (containsZip(getMessageText(message))) result.add(message);
+                String messageText = getMessageText(message);
+                //System.out.println(messageText); // to delete
+                if (containsZip(messageText)) result.add(message);
             } else {
                 result.add(message);
             }
@@ -149,7 +150,16 @@ public class GmailService {
     }
 
     private static String getMessageText(Message message) {
-        return StringUtils.newStringUtf8(Base64.decodeBase64(message.getPayload().getParts().get(0).getBody().getData()));
+        byte[] data = new byte[0];
+        String result = null;
+        try {
+            result = StringUtils.newStringUtf8(message.getPayload().getBody().decodeData());
+            //System.out.println(result);
+            //data = message.getPayload().getParts().get(0).getBody().decodeData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     private List<String> extractURLStrings(Message message) {
@@ -185,8 +195,10 @@ public class GmailService {
     }
 
     private boolean containsZip(String messageText) {
-        for (String zip : zips) {
-            if (messageText.contains(zip)) return true;
+        if (messageText != null) {
+            for (String zip : zips) {
+                if (messageText.contains(zip)) return true;
+            }
         }
         return false;
     }
@@ -194,7 +206,7 @@ public class GmailService {
     public Gmail getService() {
         return service;
     }
-    
+
     private void initLabels() throws IOException {
         if (labelId == null)  {
             ListLabelsResponse listLabelsResponse = service.users().labels().list("me").execute();
