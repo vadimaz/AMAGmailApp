@@ -18,13 +18,15 @@ public class AMAGmailApp {
                     "89162 89164 89165 89166 89169 89170 89173 89177 89178 89179 89180 " +
                     "89183 89185 89193 89195 89199").split(" ");
 
+    private static int count;
+
     public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
 
-        Company company1 = new Company("Fidelity National Home Warranty", "info@eliterestorationteam.com",
+        Company company1 = new Company("Fidelity National Home Warranty", "dispatch@fnf.com",
                 "FNHW Rush Dispatch Offer", "fnhw.com/swobid/BidForm.aspx", "a=1");
-        Company company2 = new Company("Old Republic Home Protection", "info@eliterestorationteam.com",
+        Company company2 = new Company("Old Republic Home Protection", "donotreply@orhp.com",
                 "Can you accept this job?", "orhp.com/index.cfm?go=contractors.acceptWOOffer");
-        Company company3 = new Company("First American Home Warranty", "info@eliterestorationteam.com",
+        Company company3 = new Company("First American Home Warranty", "DoNotReply@home-warranty-info.com",
                 "Emergency Service Confirmation", "s.fahw.com/woo");
         Company[] companies = {company1, company2, company3};
 
@@ -37,15 +39,18 @@ public class AMAGmailApp {
                 System.out.println(company.getName());
                 List<URL> urls = service.getNewURLs();
                 if (urls == null) {
-                    System.out.println("No new messages.\n");
+                    System.out.println("There are no new messages.\n");
                     continue;
                 }
+                System.out.println("There are " + urls.size() + " new messages.\n");
                 for (URL url : urls) {
                     System.out.println(url);
+                    count++;
                     new Thread(new URLConnectRunnable(url)).start();
                 }
                 System.out.println("\n");
             }
+            System.out.println("----- " + count + " messages proceed -----\n");
             Thread.sleep(5000);
         }
 

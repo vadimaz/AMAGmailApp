@@ -92,8 +92,6 @@ public class GmailService {
         for (Message message : messages) {
             String urlString = getAppropriateURLString(extractURLStrings(message));
             if (urlString != null) result.add(new URL(urlString));
-            //System.out.println(message.getLabelIds());
-            //service.users().messages().modify(USER, message.getId(), new ModifyMessageRequest().setRemoveLabelIds(Collections.singletonList("UNREAD"))).execute();
             markMessageAsReadAndChangeItsLabel(message);
         }
         return result;
@@ -112,7 +110,8 @@ public class GmailService {
         if (messages == null || messages.size() == 0) return null;
         List<Message> result = new ArrayList<>();
         for (Message message : messages) {
-            String messageSubject = message.getPayload().getHeaders().get(21).getValue();
+            String messageSubject = message.getPayload().getHeaders().get(findSubjectId(message)).getValue();
+            //System.out.println("Inside getMessagesBySubject(): messageSubject is " + messageSubject); // to delete
             if (messageSubject.toLowerCase().contains(subject.toLowerCase())) {
                 result.add(message);
             }
@@ -136,6 +135,7 @@ public class GmailService {
     private List<Message> getMessages() throws IOException {
         ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("in:inbox from:%s is:unread", company.getEmail())).execute();
         if (messagesResponse.getMessages() == null) return null;
+        //System.out.println("There are " + messagesResponse.getMessages().size() + " new messages."); // to delete
         List<Message> messages = new ArrayList<>();
         for (Message m : messagesResponse.getMessages()) {
             Message message = getMessage(m.getId());
@@ -194,6 +194,7 @@ public class GmailService {
     public Gmail getService() {
         return service;
     }
+    
     private void initLabels() throws IOException {
         if (labelId == null)  {
             ListLabelsResponse listLabelsResponse = service.users().labels().list("me").execute();
@@ -207,5 +208,15 @@ public class GmailService {
             newLabel = service.users().labels().create(USER, newLabel).execute();
             labelId = newLabel.getId();
         }
+    }
+    private int findSubjectId(Message message) {
+        List<MessagePartHeader> headerList = message.getPayload().getHeaders();
+        for (int i = 0; i < headerList.size(); i++) {
+            MessagePartHeader partHeader = headerList.get(i);
+            if (partHeader.getName().equalsIgnoreCase("subject")) {
+                return i;
+            }
+        }
+        return 0;
     }
 }
