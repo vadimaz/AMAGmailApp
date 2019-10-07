@@ -1,5 +1,7 @@
 package com.blogspot.vadimaz.amagmailapp;
 
+import com.blogspot.vadimaz.amagmailapp.config.Configuration;
+
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -29,6 +31,8 @@ public class AMAGmailApp {
         Company company3 = new Company("First American Home Warranty", "DoNotReply@home-warranty-info.com",
                 "Emergency Service Confirmation", "s.fahw.com/woo");
         Company[] companies = {company1, company2, company3};
+
+        Configuration config = new Configuration(companies, ZIPS);
 
         GmailService service = new GmailService();
         service.setZips(ZIPS);
