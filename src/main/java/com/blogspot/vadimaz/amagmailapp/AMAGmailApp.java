@@ -46,7 +46,7 @@ public class AMAGmailApp {
                 for (URL url : urls) {
                     System.out.println(url);
                     count++;
-                    new Thread(new URLConnectRunnable(url)).start();
+                    new Thread(new URLConnectRunnable(url, service.getService(), company)).start();
                 }
                 System.out.println("\n");
             }

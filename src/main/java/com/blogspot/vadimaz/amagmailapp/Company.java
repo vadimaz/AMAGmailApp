@@ -28,4 +28,20 @@ public class Company {
     public String[] getTriggers() {
         return triggers;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public void setTriggers(String[] triggers) {
+        this.triggers = triggers;
+    }
 }

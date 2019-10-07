@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class GmailService {
 
-    private static final String USER = "me";
+    public static final String USER = "me";
 
     private static final String APPLICATION_NAME = "AMA Gmail App";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
