@@ -52,7 +52,6 @@ public class AMAGmailApp {
                     count++;
                     new Thread(new URLConnectRunnable(url, service.getService(), company)).start();
                 }
-                System.out.println("\n");
             }
             System.out.println("----- " + count + " messages proceed -----\n");
             Thread.sleep(5000);

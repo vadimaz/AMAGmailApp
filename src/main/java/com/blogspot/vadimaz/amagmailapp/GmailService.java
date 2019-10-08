@@ -99,7 +99,6 @@ public class GmailService {
     private void markMessageAsReadAndChangeItsLabel(Message message) throws IOException {
         if (labelId != null) {
             ModifyMessageRequest request = new ModifyMessageRequest().setAddLabelIds(Collections.singletonList(labelId)).setRemoveLabelIds(Collections.singletonList("UNREAD"));
-            //ModifyMessageRequest request = new ModifyMessageRequest().setAddLabelIds(Collections.singletonList(labelId));
             service.users().messages().modify(USER, message.getId(),request).execute();
         }
     }
@@ -109,7 +108,6 @@ public class GmailService {
         List<Message> result = new ArrayList<>();
         for (Message message : messages) {
             String messageSubject = message.getPayload().getHeaders().get(findSubjectId(message)).getValue();
-            //System.out.println("Inside getMessagesBySubject(): messageSubject is " + messageSubject); // to delete
             if (messageSubject.toLowerCase().contains(subject.toLowerCase())) {
                 result.add(message);
             }
@@ -123,7 +121,6 @@ public class GmailService {
         for (Message message : messages) {
             if (zips != null) {
                 String messageText = getMessageText(message);
-                //System.out.println(messageText); // to delete
                 if (containsZip(messageText)) result.add(message);
             } else {
                 result.add(message);
@@ -134,8 +131,7 @@ public class GmailService {
 
     private List<Message> getMessages() throws IOException {
         ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("in:inbox from:%s is:unread", company.getEmail())).execute();
-        if (messagesResponse.getMessages() == null) return null;
-        //System.out.println("There are " + messagesResponse.getMessages().size() + " new messages."); // to delete
+        if (messagesResponse.getMessages() == null || messagesResponse.getMessages().size() == 0) return null;
         List<Message> messages = new ArrayList<>();
         for (Message m : messagesResponse.getMessages()) {
             Message message = getMessage(m.getId());
@@ -153,8 +149,6 @@ public class GmailService {
         String result = null;
         try {
             result = StringUtils.newStringUtf8(message.getPayload().getBody().decodeData());
-            //System.out.println(result);
-            //data = message.getPayload().getParts().get(0).getBody().decodeData();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -164,7 +158,7 @@ public class GmailService {
     private List<String> extractURLStrings(Message message) {
         List<String> result = new ArrayList<>();
         String messageText = getMessageText(message);
-        if (messageText == null) return result;
+        if (messageText == null || messageText.length() == 0) return result;
 
         // Pattern for recognizing a URL
         Pattern urlPattern = Pattern.compile(

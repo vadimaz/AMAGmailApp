@@ -64,7 +64,7 @@ public class URLConnectRunnable implements Runnable {
                     redirect = true;
             }
 
-            System.out.println("Responce Code: " + status);
+            System.out.println("Response Code: " + status);
 
             if (redirect) {
                 String newUrl = connection.getHeaderField("Location");
