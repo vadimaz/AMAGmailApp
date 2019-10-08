@@ -42,7 +42,7 @@ public class AMAGmailApp {
                 service.setCompany(company);
                 System.out.println(company.getName());
                 List<URL> urls = service.getNewURLs();
-                if (urls == null) {
+                if (urls == null || urls.size() == 0) {
                     System.out.println("There are no new messages.\n");
                     continue;
                 }
