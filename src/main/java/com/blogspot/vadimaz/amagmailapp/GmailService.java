@@ -86,7 +86,7 @@ public class GmailService {
 
     public List<URL> getNewURLs() throws IOException {
         List<Message> messages = getMessages();
-        if (messages == null) return null;
+        if (messages == null || messages.size() == 0) return null;
         List<URL> result = new ArrayList<>();
         for (Message message : messages) {
             String urlString = getAppropriateURLString(extractURLStrings(message));
