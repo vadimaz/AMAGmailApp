@@ -5,7 +5,6 @@ import com.blogspot.vadimaz.amagmailapp.config.Configuration;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.util.Date;
 import java.util.List;
 
 public class AMAGmailApp {
@@ -36,25 +35,29 @@ public class AMAGmailApp {
 
         GmailService service = new GmailService();
         service.setZips(ZIPS);
+        AppLogger.info("Working ...");
         while (true) {
-            System.out.println("----- " + new Date() + " ------\n");
+            //System.out.println("----- " + new Date() + " ------\n");
             for (Company company : companies) {
                 service.setCompany(company);
-                System.out.println(company.getName());
+                //System.out.println(company.getName());
                 List<URL> urls = service.getNewURLs();
-                if (urls == null || urls.size() == 0) {
-                    System.out.println("There are no new messages.\n");
-                    continue;
-                }
-                System.out.println("There are " + urls.size() + " new messages.\n");
-                for (URL url : urls) {
-                    System.out.println(url);
-                    count++;
-                    new Thread(new URLConnectRunnable(url, service.getService(), company)).start();
+                if (urls != null && urls.size() != 0) {
+                    AppLogger.info(String.format("%s <%s> - %d message(s) found.", company.getName(), company.getEmail(), urls.size()));
+                    //System.out.println("There are " + urls.size() + " new message(s).\n");
+                    for (URL url : urls) {
+                        AppLogger.info(String.format("%s <%s> - URL extracted: %s", company.getName(), company.getEmail(), url.toString()));
+                        count++;
+
+                        new Thread(new URLConnectRunnable(url, service.getService(), company)).start();
+                    }
+
+                } else {
+                    AppLogger.info(String.format("%s <%s> - 0 message(s) found.", company.getName(), company.getEmail()));
                 }
             }
-            System.out.println("----- " + count + " messages proceed -----\n");
-            Thread.sleep(5000);
+            AppLogger.info(String.format("Total messages proceed: %d", count));
+            Thread.sleep(3000); // delay
         }
 
     }
