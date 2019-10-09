@@ -14,15 +14,12 @@ import java.net.URL;
 public class URLConnectRunnable implements Runnable {
     private URL urlAddress;
     private Gmail service;
-    private Company company;
     private static final String TO = "vzorenko@gmail.com";
     private static final String FROM = "info@eliterestorationteam.com";
-    private String subject;
-    public URLConnectRunnable(URL urlAddress, Gmail service, Company company) {
+
+    public URLConnectRunnable(URL urlAddress, Gmail service) {
         this.urlAddress = urlAddress;
         this.service = service;
-        this.company = company;
-        this.subject = company.getName() + ": " + urlAddress;
     }
 
     @Override
@@ -33,7 +30,6 @@ public class URLConnectRunnable implements Runnable {
             connection = getHttpConnection(urlAddress); // getting http or https url connection
         } catch (IOException e) {
             AppLogger.error(String.format("Unable to get connection for URL: %s", urlAddress));
-            //System.out.println("Can't get connection for URL: " + urlAddress);
             e.printStackTrace();
         }
 
@@ -43,10 +39,9 @@ public class URLConnectRunnable implements Runnable {
         if (connection != null && response != null) {
            //System.out.println(response); // printing the response
             try {
-                MailSender.sendMessage(service, GmailService.USER, MailSender.createEmail(TO, FROM, subject, response));
+                MailSender.sendMessage(service, GmailService.USER, MailSender.createEmail(TO, FROM, "AmaGmailApp " + connection.getURL(), response));
             } catch (MessagingException | IOException e) {
-                AppLogger.error(String.format("Unable to send message with subject '%s %s' to %s", company.getName(), connection.getURL(), TO));
-                //System.out.println("Can't send mail '" + company.getName() + ": " + connection.getURL() + "'");
+                AppLogger.error(String.format("Unable to send message 'AmaGmailApp %s' to %s", connection.getURL(), TO));
                 e.printStackTrace();
             }
         }
@@ -68,8 +63,7 @@ public class URLConnectRunnable implements Runnable {
     private HttpURLConnection getConnectionIfRedirect(HttpURLConnection connection) throws IOException {
         if (connection != null) {
             int responseCode = connection.getResponseCode();
-            AppLogger.info(String.format("%s - response code is %d for URL: %s", company.getName(), responseCode, connection.getURL()));
-            //System.out.printf("Response code is %d for URL: %s\n", responseCode, connection.getURL()); // printing the response code or url connection
+            AppLogger.info(String.format("Response code is %d for URL: %s", responseCode, connection.getURL()));
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
                         || responseCode == HttpURLConnection.HTTP_MOVED_PERM
@@ -95,7 +89,6 @@ public class URLConnectRunnable implements Runnable {
                 }
             } catch (IOException e) {
                 AppLogger.error(String.format("Unable to get input stream from URL: %s", connection.getURL()));
-                //System.out.println("Can't get an InputStream from URL: " + connection.getURL());
             }
 
             if (inputStream != null) {
@@ -109,7 +102,6 @@ public class URLConnectRunnable implements Runnable {
 
                 } catch (IOException e) {
                     AppLogger.error(String.format("Unable to read data from URL: %s", connection.getURL()));
-                    //System.out.println("Can't read data from URL: " + connection.getURL());
                     e.printStackTrace();
                 }
             }

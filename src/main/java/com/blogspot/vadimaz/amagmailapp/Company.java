@@ -6,13 +6,6 @@ public class Company {
     private String subject;
     private String[] triggers;
 
-    public Company(String name, String email, String subject, String... triggers) {
-        this.name = name;
-        this.email = email;
-        this.subject = subject;
-        this.triggers = triggers;
-    }
-
     public String getName() {
         return name;
     }

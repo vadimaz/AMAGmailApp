@@ -1,5 +1,6 @@
 package com.blogspot.vadimaz.amagmailapp;
 
+import com.blogspot.vadimaz.amagmailapp.config.Configuration;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -63,28 +64,20 @@ public class GmailService {
     }
 
     private Gmail service;
-    private String[] zips;
-    private Company company;
+    private Configuration config;
     private static final String LABEL_NAME = "AMAGMAILAPP";
     private static String labelId;
 
-    public GmailService() throws IOException, GeneralSecurityException {
+    public GmailService(Configuration config) throws IOException, GeneralSecurityException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         this.service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        this.config = config;
         initLabels(); // checking if labelId exists
     }
 
-    public void setZips(String[] zips) {
-        this.zips = zips;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public List<URL> getNewURLs() throws IOException {
+    /*public List<URL> getNewURLs() throws IOException {
         List<Message> messages = getMessages();
         if (messages == null || messages.size() == 0) return null;
         List<URL> result = new ArrayList<>();
@@ -94,6 +87,19 @@ public class GmailService {
             markMessageAsReadAndChangeItsLabel(message);
         }
         return result;
+    }*/
+
+    public  List<URL> getUrls(List<Message> messages) throws IOException {
+        if (messages != null && messages.size() > 0) {
+            List<URL> urls = new ArrayList<>();
+            for (Message message : messages) {
+                String urlString = getAppropriateURLString(extractURLStrings(message));
+                if (urlString != null) urls.add(new URL(urlString));
+                markMessageAsReadAndChangeItsLabel(message);
+            }
+            return urls;
+        }
+        return null;
     }
 
     private void markMessageAsReadAndChangeItsLabel(Message message) throws IOException {
@@ -116,20 +122,22 @@ public class GmailService {
         return result;
     }
     private List<Message> getMessagesByZip(List<Message> messages) throws IOException {
-        if (messages == null || messages.size() == 0) return null;
-        List<Message> result = new ArrayList<>();
-        for (Message message : messages) {
-            if (zips != null) {
-                String messageText = getMessageText(message);
-                if (containsZip(messageText)) result.add(message);
-            } else {
-                result.add(message);
+        if (messages != null && messages.size() > 0) {
+            List<Message> result = new ArrayList<>();
+            for (Message message : messages) {
+                if (config.getZips() != null) {
+                    String messageText = getMessageText(message);
+                    if (containsZip(messageText)) result.add(message);
+                } else {
+                    result.add(message);
+                }
             }
+            return result;
         }
-        return result;
+        return null;
     }
 
-    private List<Message> getMessages() throws IOException {
+    /*private List<Message> getMessages() throws IOException {
         ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("in:inbox from:%s is:unread", company.getEmail())).execute();
         if (messagesResponse.getMessages() == null || messagesResponse.getMessages().size() == 0) return null;
         List<Message> messages = new ArrayList<>();
@@ -138,6 +146,22 @@ public class GmailService {
             messages.add(message);
         }
         return getMessagesByZip(getMessagesBySubject(messages, company.getSubject()));
+    }*/
+
+    public List<Message> getMessages(String query) throws IOException {
+        if (query != null) {
+            ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(query).execute();
+            //System.out.println(messagesResponse.getMessages() != null ? messagesResponse.getMessages().size() : null);
+            if (messagesResponse.getMessages() != null && messagesResponse.getMessages().size() > 0) {
+                List<Message> messages = new ArrayList<>();
+                for (Message m : messagesResponse.getMessages()) {
+                    Message message = getMessage(m.getId());
+                    messages.add(message);
+                }
+                return getMessagesByZip(messages);
+            }
+        }
+        return null;
     }
 
     private Message getMessage(String id) throws IOException {
@@ -178,18 +202,20 @@ public class GmailService {
     private String getAppropriateURLString(List<String> urls) {
         for (String url: urls) {
             boolean contains = false;
-            for (String trigger : company.getTriggers()) {
-                contains = url.contains(trigger);
-                if (!contains) break;
+            for (Company company : config.getCompanies()) {
+                for (String trigger : company.getTriggers()) {
+                    contains = url.contains(trigger);
+                    if (!contains) break;
+                }
+                if (contains) return url;
             }
-            if (contains) return url;
         }
         return null;
     }
 
     private boolean containsZip(String messageText) {
         if (messageText != null) {
-            for (String zip : zips) {
+            for (String zip : config.getZips()) {
                 if (messageText.contains(zip)) return true;
             }
         }

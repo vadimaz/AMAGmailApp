@@ -6,11 +6,6 @@ public class Configuration {
     private Company[] companies;
     private String[] zips;
 
-    public Configuration(Company[] companies, String[] zips) {
-        this.companies = companies;
-        this.zips = zips;
-    }
-
     public Company[] getCompanies() {
         return companies;
     }

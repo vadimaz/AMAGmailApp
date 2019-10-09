@@ -80,9 +80,6 @@ public class MailSender {
         Message message = createMessageWithEmail(emailContent);
         message = service.users().messages().send(userId, message).execute();
         AppLogger.info(String.format("Message '%s' sent to '%s'", emailContent.getSubject(), emailContent.getAllRecipients()[0].toString()));
-
-        //System.out.println("Message id: " + message.getId());
-        //System.out.println(message.toPrettyString());
         return message;
     }
 }
