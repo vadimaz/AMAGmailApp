@@ -27,7 +27,7 @@ public class AMAGmailApp {
                 "FNHW Rush Dispatch Offer", "fnhw.com/swobid/BidForm.aspx", "a=1");
         Company company2 = new Company("Old Republic Home Protection", "donotreply@orhp.com",
                 "Can you accept this job?", "orhp.com/index.cfm?go=contractors.acceptWOOffer");
-        Company company3 = new Company("First American Home Warranty", "DoNotReply@home-warranty-info.com",
+        Company company3 = new Company("First American Home Warranty", "donotreply@home-warranty-info.com>",
                 "Emergency Service Confirmation", "s.fahw.com/woo");
         Company[] companies = {company1, company2, company3};
 
