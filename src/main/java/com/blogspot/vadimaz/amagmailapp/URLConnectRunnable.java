@@ -1,6 +1,7 @@
 package com.blogspot.vadimaz.amagmailapp;
 
 import com.google.api.services.gmail.Gmail;
+import org.apache.commons.text.StringEscapeUtils;
 
 import javax.mail.MessagingException;
 import javax.net.ssl.HttpsURLConnection;
@@ -35,9 +36,7 @@ public class URLConnectRunnable implements Runnable {
 
         String response = getContent(connection); // reading html from connection
 
-        // print response and send mail with response
         if (connection != null && response != null) {
-           //System.out.println(response); // printing the response
             try {
                 MailSender.sendMessage(service, GmailService.USER, MailSender.createEmail(TO, FROM, "AmaGmailApp " + connection.getURL(), response));
             } catch (MessagingException | IOException e) {
@@ -45,6 +44,10 @@ public class URLConnectRunnable implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private HttpURLConnection getConnection(URL url) throws IOException {
+        return (HttpURLConnection) url.openConnection();
     }
 
     private HttpURLConnection getHttpConnection(URL url) throws IOException {
@@ -68,7 +71,7 @@ public class URLConnectRunnable implements Runnable {
                 if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
                         || responseCode == HttpURLConnection.HTTP_MOVED_PERM
                         || responseCode == HttpURLConnection.HTTP_SEE_OTHER)
-                    return getHttpConnection(new URL(connection.getHeaderField("Location")));
+                    return getHttpConnection(new URL(StringEscapeUtils.unescapeXml(connection.getHeaderField("Location"))));
             }
             return connection;
         }

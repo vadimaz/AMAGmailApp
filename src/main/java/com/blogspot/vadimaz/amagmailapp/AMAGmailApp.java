@@ -32,12 +32,10 @@ public class AMAGmailApp {
             int attemptOrders = 0;
             for (Company company : config.getCompanies()) {
                 String query = String.format("in:inbox is:unread subject:%s", company.getSubject());
-                //AppLogger.info(company.getName() + " query: " + query);
                 List<Message> messages = service.getMessages(query);
                 List<URL> urls = service.getUrls(messages);
 
                 if (urls != null && urls.size() > 0) {
-                    //AppLogger.info(String.format("%s: %d message(s) found.", company.getName(), urls.size()));
                     attemptOrders += urls.size();
                     for (URL url : urls) {
                         totalOrders++;

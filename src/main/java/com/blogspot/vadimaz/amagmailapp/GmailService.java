@@ -15,6 +15,7 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.*;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -94,7 +95,7 @@ public class GmailService {
             List<URL> urls = new ArrayList<>();
             for (Message message : messages) {
                 String urlString = getAppropriateURLString(extractURLStrings(message));
-                if (urlString != null) urls.add(new URL(urlString));
+                if (urlString != null) urls.add(new URL(StringEscapeUtils.unescapeXml(urlString)));
                 markMessageAsReadAndChangeItsLabel(message);
             }
             return urls;
