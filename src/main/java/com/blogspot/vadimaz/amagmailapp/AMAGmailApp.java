@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AMAGmailApp {
 
-    private static int attemptCount, totalOrders;
+    private static int attemptCount;
+    public static AtomicInteger succeed = new AtomicInteger(0);
+    public static AtomicInteger failed  = new AtomicInteger(0);
 
     public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
 
@@ -32,13 +35,18 @@ public class AMAGmailApp {
             int attemptOrders = 0;
             for (Company company : config.getCompanies()) {
                 String query = String.format("in:inbox is:unread subject:%s", company.getSubject());
-                List<Message> messages = service.getMessages(query);
+                List<Message> messages = null;
+                try {
+                    messages = service.getMessages(query);
+                } catch (Exception e) {
+                    AppLogger.error("Unable to get messages from the server.");
+                    e.printStackTrace();
+                }
                 List<URL> urls = service.getUrls(messages);
 
                 if (urls != null && urls.size() > 0) {
                     attemptOrders += urls.size();
                     for (URL url : urls) {
-                        totalOrders++;
                         AppLogger.info(String.format("URL extracted: %s", url.toString()));
                         new Thread(new URLConnectRunnable(url, service.getService())).start();
                     }
@@ -46,7 +54,11 @@ public class AMAGmailApp {
                 }
             }
             AppLogger.info(String.format("Order(s) found: %d", attemptOrders));
-            if (attemptCount%10 == 0) AppLogger.info(String.format("TOTAL ORDERS PROCEED: %d", totalOrders));
+            if (attemptCount%10 == 0) {
+                int totalOrders = succeed.get() + failed.get();
+                AppLogger.info(String.format("TOTAL ORDERS PROCEED: %d", totalOrders));
+                if (totalOrders > 0) AppLogger.info(String.format("SUCCEED: %d, FAILED: %d", succeed.get(), failed.get()));
+            }
 
             Thread.sleep(1000); // delay
         }

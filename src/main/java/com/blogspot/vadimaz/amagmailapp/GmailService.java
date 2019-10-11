@@ -49,7 +49,8 @@ public class GmailService {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GmailService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        //InputStream in = GmailService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = new FileInputStream("credentials.json");
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -77,18 +78,6 @@ public class GmailService {
         this.config = config;
         initLabels(); // checking if labelId exists
     }
-
-    /*public List<URL> getNewURLs() throws IOException {
-        List<Message> messages = getMessages();
-        if (messages == null || messages.size() == 0) return null;
-        List<URL> result = new ArrayList<>();
-        for (Message message : messages) {
-            String urlString = getAppropriateURLString(extractURLStrings(message));
-            if (urlString != null) result.add(new URL(urlString));
-            markMessageAsReadAndChangeItsLabel(message);
-        }
-        return result;
-    }*/
 
     public  List<URL> getUrls(List<Message> messages) throws IOException {
         if (messages != null && messages.size() > 0) {
@@ -137,17 +126,6 @@ public class GmailService {
         }
         return null;
     }
-
-    /*private List<Message> getMessages() throws IOException {
-        ListMessagesResponse messagesResponse = service.users().messages().list(USER).setQ(String.format("in:inbox from:%s is:unread", company.getEmail())).execute();
-        if (messagesResponse.getMessages() == null || messagesResponse.getMessages().size() == 0) return null;
-        List<Message> messages = new ArrayList<>();
-        for (Message m : messagesResponse.getMessages()) {
-            Message message = getMessage(m.getId());
-            messages.add(message);
-        }
-        return getMessagesByZip(getMessagesBySubject(messages, company.getSubject()));
-    }*/
 
     public List<Message> getMessages(String query) throws IOException {
         if (query != null) {

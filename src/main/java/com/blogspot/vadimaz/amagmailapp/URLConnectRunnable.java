@@ -2,6 +2,8 @@ package com.blogspot.vadimaz.amagmailapp;
 
 import com.google.api.services.gmail.Gmail;
 import org.apache.commons.text.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import javax.mail.MessagingException;
 import javax.net.ssl.HttpsURLConnection;
@@ -37,6 +39,13 @@ public class URLConnectRunnable implements Runnable {
         String response = getContent(connection); // reading html from connection
 
         if (connection != null && response != null) {
+            if (orderAvailable(response)) {
+                AppLogger.info("SUCCESS! WORK ORDER IS ACCEPTED.");
+                AMAGmailApp.succeed.incrementAndGet();
+            } else {
+                AppLogger.info("FAILED! WORK ORDER IS NO LONGER AVAILABLE.");
+                AMAGmailApp.failed.incrementAndGet();
+            }
             try {
                 MailSender.sendMessage(service, GmailService.USER, MailSender.createEmail(TO, FROM, "AmaGmailApp " + connection.getURL(), response));
             } catch (MessagingException | IOException e) {
@@ -44,10 +53,6 @@ public class URLConnectRunnable implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
-
-    private HttpURLConnection getConnection(URL url) throws IOException {
-        return (HttpURLConnection) url.openConnection();
     }
 
     private HttpURLConnection getHttpConnection(URL url) throws IOException {
@@ -112,6 +117,15 @@ public class URLConnectRunnable implements Runnable {
         }
 
         return null;
+    }
+
+    private boolean orderAvailable(String html) {
+        if (html != null && html.length() > 0) {
+            Document doc = Jsoup.parse(html);
+            String plain = doc.body().text();
+            return !plain.contains("no longer available");
+        }
+        return false;
     }
 
 }
