@@ -5,5 +5,5 @@
 /out/
 /tokens/
 # Project exclude files
-config.json
-credentials.json
+/config.json
+/credentials.json
