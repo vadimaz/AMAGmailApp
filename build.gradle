@@ -13,7 +13,7 @@ repositories {
 jar {
     manifest {
         attributes "Manifest-Version": "1.0",
-        "Main-Class" : "com.blogspot.vadimaz.amagmailapp.AMAGmailApp"
+        "Main-Class" : "com.blogspot.vadimaz.amagmailapp.Main"
     }
     from {
         configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}

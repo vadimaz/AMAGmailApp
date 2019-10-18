@@ -128,7 +128,9 @@ public class GmailServiceHandler {
 
     public synchronized void markMessageAsRead(Message message) {
         if (labelId != null) {
-            ModifyMessageRequest request = new ModifyMessageRequest().setAddLabelIds(Collections.singletonList(labelId)).setRemoveLabelIds(Collections.singletonList("UNREAD"));
+            ModifyMessageRequest request = new ModifyMessageRequest()
+                    .setAddLabelIds(Collections.singletonList(labelId))
+                    .setRemoveLabelIds(Collections.singletonList("UNREAD"));
             try {
                 service.users().messages().modify(USER, message.getId(),request).execute();
             } catch (IOException e) {

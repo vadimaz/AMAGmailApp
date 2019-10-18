@@ -6,18 +6,17 @@ import com.blogspot.vadimaz.amagmailapp.utils.GmailMessageUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.gmail.model.Message;
 
-import javax.mail.MessagingException;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
 public class AMAGmailApp implements OrderListener {
 
-    private int attemptCount;
-    public AtomicInteger succeed = new AtomicInteger(0);
-    public AtomicInteger failed  = new AtomicInteger(0);
+    private volatile int succeed, failed;
     private Configuration config;
     private GmailServiceHandler serviceHandler;
     private static final String CONFIG_FILE_NAME = "config.json";
@@ -33,14 +32,27 @@ public class AMAGmailApp implements OrderListener {
         }
         String query = GmailMessageUtils.buildQuery(config);
         AppLogger.info("Gmail searching query: " + query);
+        int attemptCount = failed = succeed = 0;
+        Set<String> messageIds = Collections.synchronizedSet(new HashSet<>());
+
         while(true) {
+            attemptCount++;
             List<Message> messages = serviceHandler.getMessages(query);
             if (messages != null && messages.size() > 0) {
+                AppLogger.info(String.format("Attempt #%d: %d offer(s) received", attemptCount, messages.size()));
                 for (Message message : messages) {
-                    new Thread(new Order(message, serviceHandler, config,  this)).start();
+                    if (!messageIds.contains(message.getId())) {
+                        messageIds.add(message.getId());
+                        new Thread(new Order(message, messageIds, serviceHandler, config,  this)).start();
+                    }
                 }
+            } else {
+                AppLogger.info(String.format("Attempt #%d: offers not found", attemptCount));
             }
-            break; // just one iteration, delete the line after testing
+            if (attemptCount % 20 == 0) {
+                AppLogger.info(String.format("Total offers received: %d", succeed + failed));
+                AppLogger.info(String.format("Accepted: %d, missed: %d", succeed, failed));
+            }
         }
     }
 
@@ -66,19 +78,14 @@ public class AMAGmailApp implements OrderListener {
     @Override
     public synchronized void onOrderReady(Order order) {
         //AppLogger.info("Order saved."); // to do
+        serviceHandler.markMessageAsRead(order.getMessage());
+        if (order.isAccepted()) succeed++;
+        else failed++;
         AppLogger.info(order.toString());
-        try {
-            GmailMessageUtils.sendMessage(
-                    serviceHandler.getService(),
-                    GmailServiceHandler.USER,
-                    GmailMessageUtils.createEmail(
-                            "vzorenko@gmail.com",
-                            "vzorenko@gmail.com",
-                            (order.isAvailable() ? "SUCCESS! " : "FAILED! ") + order.getCompany().getName(),
-                            order.toString()));
-        } catch (MessagingException | IOException e) {
-            AppLogger.error("Unable to send message.");
-            e.printStackTrace();
-        }
+        serviceHandler.sendMessage(
+                "vzorenko@gmail.com",
+                "info@eliterestorationteam.com",
+                (order.isAccepted() ? "Congratulations! You've got a work order from " : "Sorry, but you've missed a work order offer from ") + order.getCompany().getName(),
+                order.toString());
     }
 }

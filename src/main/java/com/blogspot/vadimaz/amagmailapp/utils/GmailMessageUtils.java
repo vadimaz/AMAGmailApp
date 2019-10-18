@@ -28,7 +28,7 @@ public class GmailMessageUtils {
     }
 
     public static String buildQuery(Configuration config) {
-        StringBuilder queryBuilder = new StringBuilder();   // "is:unread newer_than:1d"
+        StringBuilder queryBuilder = new StringBuilder("in:inbox is:unread newer_than:1d");
         if (config.getCompanies().length > 0) {
             StringBuilder from = new StringBuilder(" {");
             StringBuilder subject = new StringBuilder(" {");

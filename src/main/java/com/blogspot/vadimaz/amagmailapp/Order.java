@@ -8,47 +8,45 @@ import com.google.api.services.gmail.model.Message;
 
 import java.net.URL;
 import java.util.Date;
+import java.util.Set;
 
 public class Order implements Runnable {
     private Message message;
+    private Set<String> messageIds;
     private GmailServiceHandler serviceHandler;
     private Configuration config;
     private String offer;
     private URL url;
     private String response;
-    private boolean available;
+    private boolean accepted;
     private OrderListener listener;
     private Company company;
-    private boolean orderReady;
-    private static int connectionAttempt = 0;
 
-    public Order(Message message, GmailServiceHandler serviceHandler, Configuration config,  OrderListener listener) {
+    public Order(Message message, Set<String> messageIds, GmailServiceHandler serviceHandler, Configuration config, OrderListener listener) {
         this.message = message;
+        this.messageIds = messageIds;
         this.serviceHandler = serviceHandler;
         this.listener = listener;
         this.config = config;
-        this.orderReady = false;
-        this.available = false;
+        this.accepted = false;
     }
 
     @Override
     public void run() {
-        connectionAttempt++;
         try {
             message = serviceHandler.getMessage(message.getId());
             String messageText = GmailMessageUtils.getMessageText(message);
             offer = GmailMessageUtils.getPlainFromHtml(messageText);
             url = URLExtractor.getUrl(messageText, config);
             response = GmailMessageUtils.getPlainFromHtml(new OrderUrlConnection(url).getHtml());
-            available = !response.toLowerCase().contains("no longer available");
+            accepted = !response.toLowerCase().contains("no longer available");
             company = getOrderCompany();
-            orderReady = response != null;
-            if (orderReady) listener.onOrderReady(this);
+            if (response != null) listener.onOrderReady(this);
 
         } catch (Exception e) {
             AppLogger.error("Unable to get and proceed message with id: " + message.getId());
             e.printStackTrace();
-            //if(connectionAttempt < 4) run();
+            run();
         }
     }
 
@@ -61,10 +59,10 @@ public class Order implements Runnable {
 
     @Override
     public String toString() {
-        if (orderReady) {
+        if (response != null) {
             StringBuilder sb = new StringBuilder("\n");
-            sb.append(available ? "SUCCESS! ORDER IS AVAILABLE." : "FAILED! ORDER IS NOT AVAILABLE!").append("\n\n");
-            sb.append("Company:\n").append(company.getName()).append("\n\n");
+            sb.append(accepted ? "Congratulations! You've got a work order from " : "Sorry, but you've missed a work order offer from ");
+            sb.append(company.getName()).append("\n\n");
             sb.append("Date:\n").append(new Date()).append("\n\n");
             sb.append("Offer:\n").append(offer).append("\n\n");
             sb.append("Response:\n").append(response).append("\n\n");
@@ -72,11 +70,15 @@ public class Order implements Runnable {
         } else return super.toString();
     }
 
-    public boolean isAvailable() {
-        return available;
+    public boolean isAccepted() {
+        return accepted;
     }
 
     public Company getCompany() {
         return company;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 }
