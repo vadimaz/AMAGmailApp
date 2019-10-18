@@ -1,8 +1,13 @@
-package com.blogspot.vadimaz.amagmailapp;
+package com.blogspot.vadimaz.amagmailapp.utils;
 
+import com.blogspot.vadimaz.amagmailapp.config.Configuration;
+import com.blogspot.vadimaz.amagmailapp.Company;
+import com.blogspot.vadimaz.amagmailapp.logging.AppLogger;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
+import com.google.api.client.util.StringUtils;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
+import org.jsoup.Jsoup;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -12,7 +17,43 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class MailSender {
+public class GmailMessageUtils {
+
+    public static String getMessageText(Message message) {
+        String result = StringUtils.newStringUtf8(message.getPayload().getBody().decodeData());
+        if (result == null) {
+            result = StringUtils.newStringUtf8(message.getPayload().getParts().get(1).getBody().decodeData());
+        }
+        return result;
+    }
+
+    public static String buildQuery(Configuration config) {
+        StringBuilder queryBuilder = new StringBuilder();   // "is:unread newer_than:1d"
+        if (config.getCompanies().length > 0) {
+            StringBuilder from = new StringBuilder(" {");
+            StringBuilder subject = new StringBuilder(" {");
+            for (Company company : config.getCompanies()) {
+                from.append("from:").append(company.getEmail().toLowerCase()).append(" ");
+                subject.append("subject:").append("(").append(company.getSubject().toLowerCase()).append(")").append( " ");
+            }
+            from.deleteCharAt(from.length()-1).append("}");
+            subject.deleteCharAt(subject.length()-1).append("}");
+            queryBuilder.append(from).append(subject);
+        }
+        if (config.getZips().length > 0) {
+            StringBuilder zips = new StringBuilder(" {");
+            for (String zip: config.getZips()) {
+                zips.append("\"").append(zip).append("\" ");
+            }
+            zips.deleteCharAt(zips.length()-1).append("}");
+            queryBuilder.append(zips);
+        }
+        return queryBuilder.toString();
+    }
+
+    public static String getPlainFromHtml(String html) {
+        return Jsoup.parse(html).body().text();
+    }
 
     /**
      * Create a MimeMessage using the parameters provided.
@@ -38,8 +79,8 @@ public class MailSender {
         email.addRecipient(javax.mail.Message.RecipientType.TO,
                 new InternetAddress(to));
         email.setSubject(subject);
-        //email.setText(bodyText); // sends a plain text
-        email.setText(bodyText, "utf-8", "html"); // sends a html
+        email.setText(bodyText); // sends a plain text
+        //email.setText(bodyText, "utf-8", "html"); // sends a html
         return email;
     }
 

@@ -21,4 +21,5 @@ public class Configuration {
     public void setZips(String[] zips) {
         this.zips = zips;
     }
+
 }

@@ -4,3 +4,6 @@
 /build/classes/java/main/
 /out/
 /tokens/
+# Project exclude files
+config.json
+credentials.json

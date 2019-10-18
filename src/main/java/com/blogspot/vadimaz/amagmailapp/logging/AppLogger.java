@@ -1,4 +1,4 @@
-package com.blogspot.vadimaz.amagmailapp;
+package com.blogspot.vadimaz.amagmailapp.logging;
 
 import java.util.Date;
 
