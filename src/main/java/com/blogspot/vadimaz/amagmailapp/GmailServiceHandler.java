@@ -96,7 +96,7 @@ public class GmailServiceHandler {
         ListMessagesResponse response;
         try {
             response = service.users().messages().list(USER).setQ(query).execute();
-        } catch (IOException e) {
+        } catch (Exception e) {
             AppLogger.error("Unable to read messages from server. Reconnecting...");
             e.printStackTrace();
             return getMessages(query);
@@ -108,7 +108,7 @@ public class GmailServiceHandler {
     public synchronized Message getMessage(String id) {
         try {
             return service.users().messages().get(USER, id).execute();
-        } catch (IOException e) {
+        } catch (Exception e) {
             AppLogger.error("Unable to read message" +  id + ". Reconnecting...");
             e.printStackTrace();
             return getMessage(id);
@@ -119,7 +119,7 @@ public class GmailServiceHandler {
     public synchronized void sendMessage(String to, String from, String subject, String message) {
         try {
             GmailMessageUtils.sendMessage(service, USER, GmailMessageUtils.createEmail(to, from, subject, message));
-        } catch (MessagingException | IOException e) {
+        } catch (Exception e) {
             AppLogger.error("Unable to send message. Reconnecting...");
             e.printStackTrace();
             sendMessage(to, from, subject, message);
@@ -133,7 +133,7 @@ public class GmailServiceHandler {
                     .setRemoveLabelIds(Collections.singletonList("UNREAD"));
             try {
                 service.users().messages().modify(USER, message.getId(),request).execute();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 AppLogger.error("Unable to mark message" +  message.getId() + " as read. Reconnecting...");
                 e.printStackTrace();
                 markMessageAsRead(message);

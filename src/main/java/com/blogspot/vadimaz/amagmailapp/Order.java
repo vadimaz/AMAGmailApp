@@ -12,7 +12,6 @@ import java.util.Set;
 
 public class Order implements Runnable {
     private Message message;
-    private Set<String> messageIds;
     private GmailServiceHandler serviceHandler;
     private Configuration config;
     private String offer;
@@ -22,9 +21,8 @@ public class Order implements Runnable {
     private OrderListener listener;
     private Company company;
 
-    public Order(Message message, Set<String> messageIds, GmailServiceHandler serviceHandler, Configuration config, OrderListener listener) {
+    public Order(Message message, GmailServiceHandler serviceHandler, Configuration config, OrderListener listener) {
         this.message = message;
-        this.messageIds = messageIds;
         this.serviceHandler = serviceHandler;
         this.listener = listener;
         this.config = config;
@@ -35,11 +33,11 @@ public class Order implements Runnable {
     public void run() {
         try {
             message = serviceHandler.getMessage(message.getId());
-            String messageText = GmailMessageUtils.getMessageText(message);
-            offer = GmailMessageUtils.getPlainFromHtml(messageText);
-            url = URLExtractor.getUrl(messageText, config);
-            response = GmailMessageUtils.getPlainFromHtml(new OrderUrlConnection(url).getHtml());
-            accepted = !response.toLowerCase().contains("no longer available");
+            offer = GmailMessageUtils.getMessageText(message);
+            url = URLExtractor.getUrl(offer, config);
+            response = new OrderUrlConnection(url).getHtml();
+            //accepted = !response.toLowerCase().contains("no longer available");
+            accepted = !GmailMessageUtils.getPlainFromHtml(response).toLowerCase().contains("no longer available");
             company = getOrderCompany();
             if (response != null) listener.onOrderReady(this);
 
@@ -61,7 +59,7 @@ public class Order implements Runnable {
     public String toString() {
         if (response != null) {
             StringBuilder sb = new StringBuilder("\n");
-            sb.append(accepted ? "Congratulations! You've got a work order from " : "Sorry, but you've missed a work order offer from ");
+            sb.append(accepted ? "Congratulations! You've got a work order from " : "Sorry, but you've missed a work offer from ");
             sb.append(company.getName()).append("\n\n");
             sb.append("Date:\n").append(new Date()).append("\n\n");
             sb.append("Offer:\n").append(offer).append("\n\n");
