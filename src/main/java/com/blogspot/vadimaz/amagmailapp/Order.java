@@ -8,7 +8,6 @@ import com.google.api.services.gmail.model.Message;
 
 import java.net.URL;
 import java.util.Date;
-import java.util.Set;
 
 public class Order implements Runnable {
     private Message message;
@@ -37,9 +36,13 @@ public class Order implements Runnable {
             url = URLExtractor.getUrl(offer, config);
             response = new OrderUrlConnection(url).getHtml();
             //accepted = !response.toLowerCase().contains("no longer available");
-            accepted = !GmailMessageUtils.getPlainFromHtml(response).toLowerCase().contains("no longer available");
-            company = getOrderCompany();
-            if (response != null) listener.onOrderReady(this);
+            if (response != null) {
+                accepted = !GmailMessageUtils.getPlainFromHtml(response).toLowerCase().contains("no longer available");
+                company = getOrderCompany();
+                listener.onOrderReady(this);
+            } else {
+                listener.onOrderFailed(this);
+            }
 
         } catch (Exception e) {
             AppLogger.error("Unable to get and proceed message with id: " + message.getId());

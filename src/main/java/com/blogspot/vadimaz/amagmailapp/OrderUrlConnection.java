@@ -17,6 +17,7 @@ public class OrderUrlConnection {
 
     public OrderUrlConnection(URL url) throws IOException {
         this.url = url;
+        this.html = null;
         init();
     }
 
@@ -81,7 +82,6 @@ public class OrderUrlConnection {
 
     private void init() throws IOException {
         HttpURLConnection connection = getHttpConnection(url); // getting http or https url connection
-        html = getContent(connection); // reading html from connection
-
+        if (connection != null) html = getContent(connection); // reading html from connection
     }
 }

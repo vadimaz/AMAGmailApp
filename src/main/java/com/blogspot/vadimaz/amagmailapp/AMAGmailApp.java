@@ -19,6 +19,7 @@ public class AMAGmailApp implements OrderListener {
     private Configuration config;
     private GmailServiceHandler serviceHandler;
     private static final String CONFIG_FILE_NAME = "config.json";
+    private Set<String> messageIds;
 
     public void init() {
         if (!configInit()) return;
@@ -32,7 +33,7 @@ public class AMAGmailApp implements OrderListener {
         String query = GmailMessageUtils.buildQuery(config);
         AppLogger.info("Gmail searching query: " + query);
         int attemptCount = failed = succeed = 0;
-        Set<String> messageIds = new HashSet<>();
+        messageIds = new HashSet<>();
 
         while(true) {
             attemptCount++;
@@ -86,5 +87,11 @@ public class AMAGmailApp implements OrderListener {
                 "info@eliterestorationteam.com",
                 (order.isAccepted() ? "Congratulations! You've got a work order from " : "Sorry, but you've missed a work offer from ") + order.getCompany().getName(),
                 order.toString());
+    }
+
+    @Override
+    public synchronized void onOrderFailed(Order order) {
+        AppLogger.info("Order processing failure.");
+        messageIds.remove(order.getMessage().getId());
     }
 }
