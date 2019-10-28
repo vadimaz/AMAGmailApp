@@ -5,6 +5,7 @@ public class Company {
     private String email;
     private String subject;
     private String[] triggers;
+    private String[] words;
 
     public String getName() {
         return name;
@@ -22,6 +23,10 @@ public class Company {
         return triggers;
     }
 
+    public String[] getWords() {
+        return words;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -36,5 +41,9 @@ public class Company {
 
     public void setTriggers(String[] triggers) {
         this.triggers = triggers;
+    }
+
+    public void setWords(String[] words) {
+        this.words = words;
     }
 }

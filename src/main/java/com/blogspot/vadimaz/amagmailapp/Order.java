@@ -34,11 +34,25 @@ public class Order implements Runnable {
             message = serviceHandler.getMessage(message.getId());
             offer = GmailMessageUtils.getMessageText(message);
             url = URLExtractor.getUrl(offer, config);
+            company = getOrderCompany();
+            if (company != null && company.getWords() != null && company.getWords().length > 0) {
+                boolean offerContainsWords = false;
+                String offerText = GmailMessageUtils.getPlainFromHtml(offer).toLowerCase();
+                for (String word : company.getWords()) {
+                    if (offerText.contains(word.toLowerCase())) {
+                        offerContainsWords = true;
+                        break;
+                    }
+                }
+                if (!offerContainsWords) {
+                    listener.onOrderSkipped(this);
+                    return;
+                }
+            }
             response = new OrderUrlConnection(url).getHtml();
             //accepted = !response.toLowerCase().contains("no longer available");
             if (response != null) {
                 accepted = !GmailMessageUtils.getPlainFromHtml(response).toLowerCase().contains("no longer available");
-                company = getOrderCompany();
                 listener.onOrderReady(this);
             } else {
                 listener.onOrderFailed(this);

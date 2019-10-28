@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class AMAGmailApp implements OrderListener {
 
-    private volatile int succeed, failed;
+    private volatile int succeed, failed, skipped;
     private Configuration config;
     private GmailServiceHandler serviceHandler;
     private static final String CONFIG_FILE_NAME = "config.json";
@@ -32,7 +32,7 @@ public class AMAGmailApp implements OrderListener {
         }
         String query = GmailMessageUtils.buildQuery(config);
         AppLogger.info("Gmail searching query: " + query);
-        long attemptCount = failed = succeed = 0;
+        long attemptCount = failed = succeed = skipped = 0;
         messageIds = new HashSet<>();
 
         while(true) {
@@ -50,8 +50,8 @@ public class AMAGmailApp implements OrderListener {
                 AppLogger.info(String.format("Attempt #%d: offers not found", attemptCount));
             }
             if (attemptCount % 20 == 0) {
-                AppLogger.info(String.format("Total offers received: %d", succeed + failed));
-                AppLogger.info(String.format("Accepted: %d, missed: %d", succeed, failed));
+                AppLogger.info(String.format("Total offers received: %d", succeed + failed + skipped));
+                AppLogger.info(String.format("Accepted: %d, missed: %d, skipped: %d", succeed, failed, skipped));
             }
         }
     }
@@ -93,5 +93,13 @@ public class AMAGmailApp implements OrderListener {
     public synchronized void onOrderFailed(Order order) {
         AppLogger.info("Order processing failure.");
         messageIds.remove(order.getMessage().getId());
+    }
+
+    @Override
+    public synchronized void onOrderSkipped(Order order) {
+        AppLogger.info("Offer skipped.");
+        skipped++;
+        serviceHandler.markMessageAsRead(order.getMessage());
+
     }
 }
