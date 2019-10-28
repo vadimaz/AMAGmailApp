@@ -79,8 +79,8 @@ public class GmailMessageUtils {
         email.addRecipient(javax.mail.Message.RecipientType.TO,
                 new InternetAddress(to));
         email.setSubject(subject);
-        email.setText(bodyText); // sends a plain text
-        //email.setText(bodyText, "utf-8", "html"); // sends a html
+        //email.setText(bodyText); // sends a plain text
+        email.setText(bodyText, "utf-8", "html"); // sends a html
         return email;
     }
 

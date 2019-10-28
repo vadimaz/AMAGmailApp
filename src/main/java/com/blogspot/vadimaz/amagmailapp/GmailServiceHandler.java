@@ -16,7 +16,6 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.*;
 
-import javax.mail.MessagingException;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;

@@ -1,6 +1,5 @@
 package com.blogspot.vadimaz.amagmailapp;
 
-import com.blogspot.vadimaz.amagmailapp.utils.GmailMessageUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.net.ssl.HttpsURLConnection;

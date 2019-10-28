@@ -19,7 +19,7 @@ public class AMAGmailApp implements OrderListener {
     private Configuration config;
     private GmailServiceHandler serviceHandler;
     private static final String CONFIG_FILE_NAME = "config.json";
-    private Set<String> messageIds;
+    private volatile Set<String> messageIds;
 
     public void init() {
         if (!configInit()) return;
@@ -32,7 +32,7 @@ public class AMAGmailApp implements OrderListener {
         }
         String query = GmailMessageUtils.buildQuery(config);
         AppLogger.info("Gmail searching query: " + query);
-        int attemptCount = failed = succeed = 0;
+        long attemptCount = failed = succeed = 0;
         messageIds = new HashSet<>();
 
         while(true) {
